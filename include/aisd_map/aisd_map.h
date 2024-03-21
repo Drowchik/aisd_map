@@ -2,6 +2,7 @@
 #include <iostream>
 #include<vector>
 
+
 using namespace std;
 
 namespace map_realization {
@@ -25,9 +26,18 @@ namespace map_realization {
 		size_t size_fullness;
 		size_t hash_function(const Key& key) {
 			const float A = 0.6128033988;
-			float f = key * A - int(key * A);
-			return size_t(f * _data.size());
+			size_t val = 0;
+			if constexpr (std::is_same_v<Key, std::string>) {
+				for (const char c : key) {
+					val = val * 128 + c;
+				}
+			} else {
+				val = static_cast<size_t>(key);
+			}
+			float f = val * A - int(val * A);
+			return static_cast<size_t>(f * _data.size());
 		}
+
 	public:
 		Map(size_t size) : _data(size), size_fullness(0) {}
 		~Map() {
@@ -67,10 +77,10 @@ namespace map_realization {
 			}
 			_data.clear();
 		}
-		size_t count(const Key& key) const {
+		size_t count(Key key) const {
 			return int(contains(key));
 		}
-		bool contains(const Key& key) {
+		bool contains(Key key) {
 			size_t index = hash_function(key);
 			if (!_data[index]) {
 				return false;
@@ -84,7 +94,7 @@ namespace map_realization {
 			}
 			return false;
 		}
-		Value* search(Key key) {
+		Value* search(const Key& key) {
 			size_t index = hash_function(key);
 			if (!_data[index]) {
 				return nullptr;
@@ -92,10 +102,11 @@ namespace map_realization {
 			Node<Key, Value>* ptr = _data[index];
 			while (ptr) {
 				if (ptr->pair_data._key == key) {
-					return ptr;
+					return &ptr->pair_data._value;
 				}
 				ptr = ptr->_next;
 			}
+			return nullptr;
 		}
 		void print() const {
 			size_t size = _data.size();
@@ -140,7 +151,7 @@ namespace map_realization {
 			size_fullness++;
 		}
 
-		bool erase(const Key& key) {
+		bool erase(Key key) {
 			size_t index = hash_function(key);
 			Node<Key, Value>* cur = _data[index];
 			Node<Key, Value>* prev = nullptr;
