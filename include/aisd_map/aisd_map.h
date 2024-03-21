@@ -33,9 +33,25 @@ namespace map_realization {
 		~Map() {
 			clear();
 		}
-		Map(const Map& a) : _data(a._data.size()) {
+		Map(const Map& a) : _data(a._data.size()), size_fullness(0) {
 			size_t size = a._data.size();
-
+			for (size_t i = 0; i < size; i++) {
+				if (a._data[i]) {
+					Node<Key, Value>* ptr = a._data[i];
+					while (ptr) {
+						insert(ptr->pair_data._key, ptr->pair_data._value);
+						ptr = ptr->_next;
+					}
+				}
+			}
+		}
+		void swap(Map& a) {
+			std::swap(_data, a._data);
+			std::swap(size_fullness, a.size_fullness);
+		}
+		Map& operator=(Map a) {
+			swap(a);
+			return *this;
 		}
 		void clear() {
 			size_t size = _data.size();
@@ -54,7 +70,7 @@ namespace map_realization {
 		size_t count(const Key& key) const {
 			return int(contains(key));
 		}
-		bool contains(const Key& key) const {
+		bool contains(const Key& key) {
 			size_t index = hash_function(key);
 			if (!_data[index]) {
 				return false;
@@ -102,16 +118,48 @@ namespace map_realization {
 				_data[index] = new Node<Key, Value>(Pair<Key, Value>(key, value));
 			}
 			else {
-				Node<Key, Value>* temp = _data[index];
-				while (temp->_next) {
-					temp = temp->_next;
-				}
-				temp->_next = new Node<Key, Value>(Pair<Key, Value>(key, value));
+				Node<Key, Value>* newNode = new Node<Key, Value>(Pair<Key, Value>(key, value));
+				newNode->_next = _data[index];
+				_data[index] = newNode;
 			}
 			size_fullness++;
 		}
 		void insert_or_assign(const Key& key, const Value& value) {
+			size_t index = hash_function(key);
+			Node<Key, Value>* temp = _data[index];
+			while (temp) {
+				if (temp->pair_data._key == key) {
+					temp->pair_data._value = value;
+					return;
+				}
+				temp = temp->_next;
+			}
+			Node<Key, Value>* newNode = new Node<Key, Value>(Pair<Key, Value>(key, value));
+			newNode->_next = _data[index];
+			_data[index] = newNode;
+			size_fullness++;
+		}
 
+		bool erase(const Key& key) {
+			size_t index = hash_function(key);
+			Node<Key, Value>* cur = _data[index];
+			Node<Key, Value>* prev = nullptr;
+
+			while (cur) {
+				if (cur->pair_data._key == key) {
+					if (prev) {
+						prev->_next = cur->_next;
+					}
+					else {
+						_data[index] = cur->_next;
+					}
+					delete cur;
+					return true;
+				}
+				prev = cur;
+				cur = cur->_next;
+			}
+			return false;
 		}
 
 	};
