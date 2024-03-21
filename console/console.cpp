@@ -7,6 +7,5 @@ using namespace map_realization;
 int main() {
 	Map<int, string> a(5);
 
-	cout << "hello world" << endl;
 	return 0;
 }
