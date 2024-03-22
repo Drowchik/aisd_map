@@ -25,7 +25,7 @@ namespace map_realization {
 		vector<Node<Key, Value>*> _data;
 		size_t size_fullness;
 		size_t hash_function(const Key& key) {
-			const float A = 0.6128033988;
+			float A = 0.6128033988;
 			size_t val = 0;
 			if constexpr (std::is_same_v<Key, std::string>) {
 				for (const char c : key) {
@@ -112,7 +112,7 @@ namespace map_realization {
 			size_t size = _data.size();
 			for (size_t i = 0; i < size; i++) {
 				if (_data[i]) {
-					auto ptr = _data[i];
+					Node<Key, Value>* ptr = _data[i];
 					while (ptr) {
 						cout << ptr->pair_data._key << " : " << ptr->pair_data._value << endl;
 						ptr = ptr->_next;
